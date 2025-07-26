@@ -1,0 +1,31 @@
+function div = Divergence(Set,i,j,dx,dy)
+
+%应对二维向量场
+
+iplus = i+1;
+iminus = i-1;
+jplus = j+1;
+jminus = j-1;
+
+if (i == 1)
+   iminus = length(Set);
+end
+
+if (i == length(Set))
+   iplus = 1; 
+end
+
+if (j == 1)
+   jminus = length(Set);
+end
+
+if (j == length(Set))
+   jplus = 1; 
+end
+
+GradX = 0.5*((Set(iplus,j,1) - Set(iminus,j,1))/dx);
+GradY = 0.5*((Set(i,jplus,2) - Set(i,jminus,2))/dy);
+
+div = GradX + GradY;
+
+end
