@@ -1,0 +1,273 @@
+%This simulation is based on Wang's paper
+%DOI: https://doi.org/10.1016/j.actamat.2005.10.032
+
+clear;close all hidden
+format long
+
+dx = 1;
+dy = 1;
+dt = 0.001;
+
+%Model initialization
+[density,OT] = generateSet();  %OT for orientation
+
+quantity = 4; %Quantity of grains
+
+%Definition of constants
+A = 16;
+B = 1;
+betaC = 10;
+betaN = 1;
+L = 10;
+
+Dvol = 0.01;
+Dvap = 0.001;
+Dsurf = 4;
+Dgb = 0.4;
+
+kappa = 100;
+c0 = 0.9816;
+C = 0.14;
+mt = 500;
+mr = 1;
+
+tic
+for turn = 1:2 %iteration time
+
+    V = zeros(4,1);
+    for o = 1:quantity
+        for x = 1:128
+            for y = 1:128
+                V(o) = V(o) + OT(x,y,o)*1^3; %Equation 14
+            end
+        end
+    end
+
+    Rc = zeros(4,2);
+    for o = 1:quantity
+        StaMomX = 0;
+        StaMomY = 0;
+        for x = 1:128
+            for y = 1:128
+                StaMomX = StaMomX + x*OT(x,y,o)*1^3;
+                StaMomY = StaMomY + y*OT(x,y,o)*1^3;
+            end
+        end
+        Rc(o,:) = [StaMomX/V(o),StaMomY/V(o)]; %Equation 13
+    end
+
+    dForce = zeros(128,128,4,2);
+
+    dF7dc = NaN(128, 128);
+    D = NaN(128, 128);
+    deltaN = NaN(128, 128, quantity);
+    for i = 1:128
+        for j = 1:128
+
+            c = density(i,j);
+            %n = OT(i,j,:);
+
+            %auxiliary parameters for later use
+            sigma1 = 0;
+            sigma2 = 0;
+            sigma3 = 0;
+            for o = 1:quantity
+                sigma1 = sigma1 + OT(i,j,o);
+                sigma2 = sigma2 + OT(i,j,o)^2;
+                sigma3 = sigma3 + OT(i,j,o)^3;
+            end
+
+            %This 'for' block for equation 9
+            for p = 1:quantity
+                for q = 1:quantity
+                    ForceVector = Gradient(OT(:,:,p),i,j,dx,dy) - Gradient(OT(:,:,q),i,j,dx,dy);
+
+                    %Equation 10
+                    if (p ~= q)&&(OT(i,j,p)*OT(i,j,q) >= C)
+                        ForceOperator = 1;
+                    else
+                        ForceOperator = 0;
+                    end
+                    dForce(i,j,p,1) = dForce(i,j,p,1) + kappa*(c - c0)*ForceOperator*ForceVector(1)*1^3;
+                    dForce(i,j,p,2) = dForce(i,j,p,2) + kappa*(c - c0)*ForceOperator*ForceVector(2)*1^3;
+                end
+            end
+
+            df7dc = 2*A*(2*c^3-3*c^2+c)+B*(2*c-6*sigma2+4*sigma3); %Partial differentiation of f to density, f for equation 5
+            dF7dc(i,j) = df7dc - betaC*Laplace(density,i,j,dx,dy); %Functional differentiation of F to density, F for equation 4
+
+            phi = c^3*(10-15*c+6*c^2);
+            relaSigma = sigma1^2 - sigma2;
+            D(i,j) = Dvol*phi + Dvap*(1-phi) + Dsurf*c*(1-c) + Dgb*relaSigma; %Equation 6
+
+            df7dn = NaN(quantity, 1);
+            dF7dn = NaN(quantity, 1);
+            for o = 1:quantity
+                df7dn(o) = 12*OT(i,j,o)*(1-c-(2-c)*OT(i,j,o)+sigma2); %Partial differentiation of f to η
+                dF7dn(o) = df7dn(o) - betaN*Laplace(OT(:,:,o),i,j,dx,dy); %Functional differentiation of F to η
+                deltaN(i,j,o) = -L*dF7dn(o); %First term on the right side of equation 18
+            end
+        end
+    end
+
+    Force = zeros(4,2);
+    for o = 1:quantity
+        for p = 1:128
+            for q = 1:128
+                Force(o,:) = Force(o,:) + [dForce(p,q,o,1),dForce(p,q,o,2)]; %Equation 11
+            end
+        end
+    end
+
+    Torque = zeros(4,3);
+    for o = 1:quantity
+        for p = 1:128
+            for q = 1:128
+                ForceArm = [p,q,0] - [Rc(o,1),Rc(o,2),0];
+                dF = [dForce(p,q,o,1),dForce(p,q,o,2),0];
+                Torque(o,:) = Torque(o,:) + cross(ForceArm,dF); %Equation 12
+            end
+        end
+    end
+
+    Vt = zeros(128,128,4,2);
+    Vr = zeros(128,128,4,2);
+    Vadv = zeros(128,128,2);
+
+    deltaC = NaN(128, 128);
+    for i = 1:128
+        for j = 1:128
+
+            %Equation 15
+            for o = 1:quantity
+                Vt(i,j,o,1) = (mt*OT(i,j,o)/V(o))*Force(o,1);
+                Vt(i,j,o,2) = (mt*OT(i,j,o)/V(o))*Force(o,2);
+            end
+
+            %Equation 16
+            for o = 1:quantity
+                CrossVector = cross(Torque(o,:),[i-Rc(o,1),j-Rc(o,2),0]);
+                VelocityVector = [CrossVector(1),CrossVector(2)];
+                Vr(i,j,o,1) =  (mr*OT(i,j,o)/V(o))*VelocityVector(1);
+                Vr(i,j,o,2) =  (mr*OT(i,j,o)/V(o))*VelocityVector(2);
+            end
+
+            %Equation 8
+            for o = 1:quantity
+                Vadv(i,j,1) = Vadv(i,j,1) + Vt(i,j,o,1) + Vr(i,j,o,1);
+                Vadv(i,j,2) = Vadv(i,j,2) + Vt(i,j,o,2) + Vr(i,j,o,2);
+            end
+
+            grad1 = Gradient(dF7dc,i,j,dx,dy);
+            grad2 = Gradient(D,i,j,dx,dy);
+            deltaC1 = 0;
+
+            for p = 1:length(grad1)
+                deltaC1 = deltaC1 + grad1(p)*grad2(p);
+            end
+
+            deltaC(i,j) = deltaC1 + D(i,j)*Laplace(dF7dc,i,j,dx,dy);
+        end
+    end
+
+    for i = 1:128
+        for j = 1:128
+
+            %Expansion according to proper differentiation theorem
+            deltaRMc1 = Divergence(density(i,j)*Vadv,i,j,dx,dy);
+            grad3 = Gradient(density,i,j,dx,dy);
+
+            deltaRMc2 = 0;
+            for p = 1:length(grad3)
+                deltaRMc2 = deltaRMc2 + grad3(p)*Vadv(i,j,p);
+            end
+
+            deltaRMc = - deltaRMc1 - deltaRMc2;
+
+            density(i,j) = density(i,j) + (deltaC(i,j) + deltaRMc)*dt; %Equation 17 & finite difference
+
+            %check the soundness of density
+            if (density(i,j) > 1)
+                density(i,j) = 1;
+            elseif (density(i,j) < 0)
+                density(i,j) = 0;
+            end
+
+            for o = 1:quantity
+
+                deltaRMn1 = Divergence(OT(i,j,o)*(Vt(:,:,o,:) + Vr(:,:,o,:)),i,j,dx,dy);
+                grad4 = Gradient(OT(:,:,o),i,j,dx,dy);
+
+                deltaRMn2 = 0;
+                for p = 1:length(grad4)
+                    deltaRMn2 = deltaRMn2 + grad4(p)*(Vt(i,j,o,p) + Vr(i,j,o,p));
+                end
+
+                deltaRMn = - deltaRMn1 - deltaRMn2;
+
+                OT(i,j,o) = OT(i,j,o) + (deltaN(i,j,o) + deltaRMn)*dt; %Equation 18 % finite difference
+
+                %Soundness check
+                if (OT(i,j,o) > 1)
+                    OT(i,j,o) = 1;
+                elseif (OT(i,j,o) < 0)
+                    OT(i,j,o) = 0;
+                end
+            end
+        end
+    end
+end
+
+%Visualization
+for i = 1:length(OT)
+    for j = 1:length(OT)
+        if (OT(i,j,1) > 0.95)
+            plot(i,j,'.','Color','b');
+            hold on
+        elseif (OT(i,j,1) <= 0.95)&&(OT(i,j,1) > 0.5)
+            plot(i,j,'.','Color','g');
+            hold on
+        elseif (OT(i,j,1) <= 0.5)&&(OT(i,j,1) > 0.1)
+            plot(i,j,'.','Color','y');
+            hold on
+        end
+
+        if (OT(i,j,2) > 0.95)
+            plot(i,j,'.','Color','b');
+            hold on
+        elseif (OT(i,j,2) <= 0.95)&&(OT(i,j,2) > 0.5)
+            plot(i,j,'.','Color','g');
+            hold on
+        elseif (OT(i,j,2) <= 0.5)&&(OT(i,j,2) > 0.1)
+            plot(i,j,'.','Color','y');
+            hold on
+        end
+
+        if (OT(i,j,3) > 0.95)
+            plot(i,j,'.','Color','b');
+            hold on
+        elseif (OT(i,j,3) <= 0.95)&&(OT(i,j,3) > 0.5)
+            plot(i,j,'.','Color','g');
+            hold on
+        elseif (OT(i,j,3) <= 0.5)&&(OT(i,j,3) > 0.1)
+            plot(i,j,'.','Color','y');
+            hold on
+        end
+
+        if (OT(i,j,4) > 0.95)
+            plot(i,j,'.','Color','b');
+            hold on
+        elseif (OT(i,j,4) <= 0.95)&&(OT(i,j,4) > 0.5)
+            plot(i,j,'.','Color','g');
+            hold on
+        elseif (OT(i,j,4) <= 0.5)&&(OT(i,j,4) > 0.1)
+            plot(i,j,'.','Color','y');
+            hold on
+        end
+    end
+end
+toc
+
+axis equal
+axis([0,128,0,128])
+hold off
