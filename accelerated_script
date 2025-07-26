@@ -24,9 +24,11 @@ Nx = 128; Ny = 128;             % 网格尺寸
 quantity = 4;                   % Grain 数量，>8 时建议用 parfor
 scalePx = 4;                    % =1 原分辨率；4→512 px；8→1024 px
 
-visInterval = 500;              % <‑‑ 每 500 回合保存一帧
-videoObj   = VideoWriter('grain_growth_20fps.mp4','MPEG-4');
-videoObj.FrameRate = 20;       % <‑‑ 20 fps
+saveStart  = 1350;              % —— 仅保存 ≥ 800
+saveStop   = 3000;             % —— 且 ≤ 3000
+visInterval = 5;              % <‑‑ 每 20 回合保存一帧
+videoObj   = VideoWriter('grain_growth_60fps.mp4','MPEG-4');
+videoObj.FrameRate = 60;       % <‑‑ 50 fps
 videoObj.Quality = 100;
 open(videoObj);
 
@@ -84,7 +86,7 @@ Vt_x = gradOT_x; Vt_y = gradOT_x; Vr_x = gradOT_x; Vr_y = gradOT_x;
 dForce_x = gradOT_x; dForce_y = gradOT_x;  
 
 %% --------------------------- 主循环 --------------------------------------
-turns = 50000;                      % 迭代步数
+turns = 3000;                      % 迭代步数
 fprintf('Running %d turns (CPU)…\n', turns); tic
 for turn = 1:turns
     %% (1) 体积 V(o) 与质量中心 Rc(o,:) ——方程 14 & 13
@@ -216,7 +218,7 @@ for turn = 1:turns
     OT = min(max(OT,0),1);
 
     % ---------- 抓帧 & 写视频 ----------
-    if mod(turn,visInterval)==0
+    if turn >= saveStart && turn <= saveStop && mod(turn,visInterval)==0
         % 更新 3 组散点的数据（不重建对象）
         [hB.XData,hB.YData] = find(any(OT>0.95,3));
         [hI.XData,hI.YData] = find(any(OT>0.5 & OT<=0.95,3));
@@ -232,7 +234,13 @@ close(videoObj);
 %% --------------------------- 可视化 --------------------------------------
 if useGPU, density = gather(density); OT = gather(OT); end
 
-figure; hold on;
+fig = figure( ...
+    'Visible','off', ...        % 跑仿真时不用弹窗
+    'Color','white', ...        % 帧背景
+    'Units','pixels', ...
+    'Position',[100 100 Nx*scalePx Ny*scalePx], ...  % 宽高相等 → 1:1 aspect
+    'InvertHardcopy','off');    % 保留 fig.Color 导出 
+hold on;
 % 渐变蓝系 RGB
 bulkC  = [0.040 0.200 0.650];   % 深蓝
 innerC = [0.175 0.480 0.820];   % 靛蓝
@@ -244,7 +252,16 @@ mask3 = any(OT > 0.1 & OT <= 0.5, 3);
 [x,y] = find(mask1); scatter(x,y,6,bulkC,'filled');
 [x,y] = find(mask2); scatter(x,y,6,innerC,'filled');
 [x,y] = find(mask3); scatter(x,y,6,outerC,'filled');
-axis equal tight; xlabel('x'); ylabel('y');
+
+
+ax  = axes(fig, ...
+    'Units','normalized', ...
+    'Position',[0 0 1 1], ...   % 坐标轴铺满整窗
+    'Visible','off', ...        % 轴线/刻度/标题统统关
+    'Clipping','on');
+axis(ax,'equal','ij','off');    % ij: (1,1) 在左上，更直观
+xlim(ax,[1 Nx]); ylim(ax,[1 Ny]);
+hold(ax,'on');                  % 下面要反复更新散点
 
 %% ----------------- End of main script. Helper functions ------------------
 % 若需要更极端的性能，可用以下命令将 circshift‑Laplacian 与 grad 编译为 mex：
