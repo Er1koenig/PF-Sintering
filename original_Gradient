@@ -1,0 +1,29 @@
+function grad = Gradient(Set,i,j,dx,dy)
+
+iplus = i+1;
+iminus = i-1;
+jplus = j+1;
+jminus = j-1; 
+
+if (i == 1)
+   iminus = length(Set);
+end
+
+if (i == length(Set))
+   iplus = 1; 
+end
+
+if (j == 1)
+   jminus = length(Set);
+end
+
+if (j == length(Set))
+   jplus = 1; 
+end
+
+GradX = 0.5*((Set(iplus,j) - Set(iminus,j))/dx);
+GradY = 0.5*((Set(i,jplus) - Set(i,jminus))/dy);
+
+grad = [GradX,GradY];
+
+end
