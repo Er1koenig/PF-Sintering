@@ -1,0 +1,113 @@
+function [density,OT] = generateSet()
+
+quantity = 4; %Quantity of grains
+Rl = 24*2^0.5; %Radius 1
+Rs = 48 - 24*2^0.5; %Radius 2
+
+for i = 1:128
+   for j = 1:128
+       density(i,j) = 0;
+   end
+end
+
+%Diffuse interface construction
+for i = 1:128
+   for j = 1:128
+         if ((i-40)^2 + (j-40)^2 <= Rs^2)||((i-40)^2 + (j-88)^2 <= Rl^2)||((i-88)^2 + (j-40)^2 <= Rl^2)||((i-88)^2 + (j-88)^2 <= Rs^2)
+            density(i,j) = 0.2;
+         end
+   end
+end
+
+for i = 1:128
+   for j = 1:128
+         if ((i-40)^2 + (j-40)^2 <= (Rs-0.5)^2)||((i-40)^2 + (j-88)^2 <= (Rl-0.5)^2)||((i-88)^2 + (j-40)^2 <= (Rl-0.5)^2)||((i-88)^2 + (j-88)^2 <= (Rs-0.5)^2)
+            density(i,j) = 0.4;
+         end
+   end
+end
+
+for i = 1:128
+   for j = 1:128
+         if ((i-40)^2 + (j-40)^2 <= (Rs-1)^2)||((i-40)^2 + (j-88)^2 <= (Rl-1)^2)||((i-88)^2 + (j-40)^2 <= (Rl-1)^2)||((i-88)^2 + (j-88)^2 <= (Rs-1)^2)
+            density(i,j) = 0.6;
+         end
+   end
+end
+
+for i = 1:128
+   for j = 1:128
+         if ((i-40)^2 + (j-40)^2 <= (Rs-1.5)^2)||((i-40)^2 + (j-88)^2 <= (Rl-1.5)^2)||((i-88)^2 + (j-40)^2 <= (Rl-1.5)^2)||((i-88)^2 + (j-88)^2 <= (Rs-1.5)^2)
+            density(i,j) = 0.8;
+         end
+   end
+end
+
+for i = 1:128
+   for j = 1:128
+         if ((i-40)^2 + (j-40)^2 <= (Rs-2)^2)||((i-40)^2 + (j-88)^2 <= (Rl-2)^2)||((i-88)^2 + (j-40)^2 <= (Rl-2)^2)||((i-88)^2 + (j-88)^2 <= (Rs-2)^2)
+            density(i,j) = 1;
+         end
+   end
+end
+
+dot = [40,40;88,40;40,88;88,88];
+
+for o = 1:quantity
+    for i = 1:128
+        for j = 1:128
+            OT(i,j,o) = 0;
+        end
+    end   
+end
+
+for o = 1:quantity
+    if (o == 1)||(o == 4)
+        R = Rs; 
+    else
+        R = Rl;
+    end
+    
+    %Diffuse interface construction
+    for i = 1:128
+      for j = 1:128
+         if ((i-dot(o,1))^2 + (j-dot(o,2))^2 <= R^2)
+            OT(i,j,o) = 0.2;
+         end
+      end
+   end
+
+   for i = 1:128
+      for j = 1:128
+         if ((i-dot(o,1))^2 + (j-dot(o,2))^2 <= (R-0.5)^2)
+            OT(i,j,o) = 0.4;
+         end
+      end
+   end
+
+   for i = 1:128
+      for j = 1:128
+         if ((i-dot(o,1))^2 + (j-dot(o,2))^2 <= (R-1)^2)
+            OT(i,j,o) = 0.6;
+         end
+      end
+   end
+
+   for i = 1:128
+      for j = 1:128
+         if ((i-dot(o,1))^2 + (j-dot(o,2))^2 <= (R-1.5)^2)
+            OT(i,j,o) = 0.8;
+         end
+      end
+   end
+   
+   for i = 1:128
+      for j = 1:128
+         if ((i-dot(o,1))^2 + (j-dot(o,2))^2 <= (R-2)^2)
+            OT(i,j,o) = 1;
+         end
+      end
+   end
+end
+
+end
