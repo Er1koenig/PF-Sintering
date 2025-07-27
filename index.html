@@ -1,46 +1,96 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>Solid‑State Sintering Grain‑Growth Simulation</title>
-    <style>
-        body { font-family: system-ui, sans-serif; line-height: 1.6; margin: 0; padding: 0 1.5rem; }
-        h1, h2 { color: #1a3353; margin-top: 2rem; }
-        ul { margin-left: 1rem; }
-        code { background: #f5f5f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
-        .video-wrapper { margin: 2rem 0; text-align: center; }
-        video { max-width: 100%; height: auto; border: 1px solid #ccc; border-radius: 8px; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Solid‑State Sintering Grain‑Growth Simulation | Yuhao Tao</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- inherit base fonts / palette / layout -->
+  <link rel="shortcut icon" href="../images/favicon/tau_icon.jpg" type="image/x-icon" />
+  <link rel="stylesheet" href="../stylesheet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Lora:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+
+  <!-- page‑specific light CSS tweaks -->
+  <style>
+    main.container { max-width: 920px; margin: 0 auto; padding: 0 1rem; }
+    h1.section-title, h2.section-title { color: var(--theme-color); font-family: var(--font-head); margin: 3rem 0 1.2rem; position: relative; }
+    h1.section-title::after, h2.section-title::after { content: ""; position: absolute; left: 0; bottom: -0.4rem; width: 3rem; height: 3px; background: var(--theme-color); border-radius: 1px; }
+    section { margin-top: 2rem; }
+    ul { margin-left: 1.2rem; }
+    code { background: #f5f5f5; padding: 0.1rem 0.35rem; border-radius: 4px; font-family: "JetBrains Mono", monospace; font-size: 0.95em; }
+    .video-wrapper { margin: 2.5rem 0; text-align: center; }
+    video { max-width: 100%; height: auto; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+    a.back-top { display: inline-block; margin: 3rem auto 4rem; text-align: center; }
+  </style>
 </head>
+
 <body>
 
-<section id="overview">
-    <h1>Project Overview</h1>
+<!-- ——— minimal fixed nav that matches home page ——— -->
+<header id="site-header">
+  <div class="nav-wrap">
+    <nav id="top-nav">
+      <ul>
+        <li><a class="nav-link" href="../index.html#profile">Profile</a></li>
+        <li><a class="nav-link" href="../index.html#publications">Publications</a></li>
+        <li><a class="nav-link" href="../index.html#research">Research</a></li>
+        <li><a class="nav-link" href="../index.html#awards">Awards</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <span id="top"></span>
+
+  <!-- === overview === -->
+  <section id="overview">
+    <h1 class="section-title">Solid‑State Sintering Grain‑Growth Simulation</h1>
     <p>
-        This page summarizes a small research project with IWM (Chair and Institute for Materials Applications in Mechanical Engineering) at RWTH Aachen University that recreates the two‑dimensional multiphase‑field model proposed by Wang&nbsp;et&nbsp;al. (<a href="https://doi.org/10.1016/j.actamat.2005.10.032" target="_blank" rel="noopener">Acta&nbsp;Materialia&nbsp;53&nbsp;(2005)&nbsp;2759‑2770</a>). The model captures solid‑state sintering and grain coarsening using:
+      This spin‑off project (in collaboration with the Chair and Institute for Materials Applications in Mechanical Engineering, RWTH Aachen) recreates the two‑dimensional multiphase‑field model proposed by Wang&nbsp;et&nbsp;al. (<a href="https://doi.org/10.1016/j.actamat.2005.10.032" target="_blank" rel="noopener">Acta Materialia 53 (2005) 2759‑2770</a>). It captures solid‑state sintering and grain coarsening through:
     </p>
     <ul>
-        <li>The <em>Cahn–Hilliard</em> equation for the evolution of the density field <code>c</code>.</li>
-        <li>The <em>Allen–Cahn</em> equation for the evolution of grain‑orientation order parameters <code>η<sub>i</sub></code>.</li>
-        <li>Rigid‑body translation and rotation of each grain by integrating the net force and torque that arise from inter‑grain interactions.</li>
+      <li>The <em>Cahn–Hilliard</em> equation for the evolution of the density field <code>c</code>.</li>
+      <li>The <em>Allen–Cahn</em> equation for the evolution of grain‑orientation order parameters <code>η<sub>i</sub></code>.</li>
+      <li>Rigid‑body translation and rotation of each grain by integrating the net force and torque generated at interfaces.</li>
     </ul>
     <p>
-        I translated the original variational equations into MATLAB, ran the test case simulation with four initial grains, and recorded the results to visualise densification and pore shrinkage.
+      I implemented the governing equations in MATLAB, ran a test‑case simulation with four initial grains, and recorded the results to visualise densification and pore shrinkage.
     </p>
-</section>
+  </section>
 
-<section id="demo">
-    <h2>Simulation Video</h2>
-    <p>The clip below shows the sintering and coalescence of four grains over several thousand time steps.</p>
+  <!-- === video demo === -->
+  <section id="demo">
+    <h2 class="section-title">Simulation Video</h2>
+    <p>The clip below shows neck formation, densification, and the coalescence of four grains over several thousand time steps.</p>
 
     <div class="video-wrapper">
-        <!-- Replace the source with the exported MP4/WebM file -->
-        <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png">
-            <source src="grain_growth_demo.mp4" type="video/mp4" />
-            Your browser does not support HTML5 video.
-        </video>
+      <!-- Replace the source with your exported MP4/WebM file -->
+      <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png" title="Play sintering demo">
+        <source src="grain_growth_demo.mp4" type="video/mp4" />
+        <source src="grain_growth_demo.webm" type="video/webm" />
+        Your browser does not support HTML5 video.
+      </video>
+      <figcaption style="font-size:0.9rem; margin-top:0.5rem;">Figure 1 – Solid‑state densification and grain coalescence (4‑grain case).</figcaption>
     </div>
-</section>
+  </section>
+
+  <p style="text-align:center;"><a href="#top" class="back-top">Back to top ↑</a></p>
+</main>
+
+<script>
+  /* keep the active‑section underline in the nav */
+  const links = [...document.querySelectorAll('.nav-link')];
+  window.addEventListener('scroll', () => {
+    const pos = window.scrollY + 140;
+    let cur = document.getElementById('overview');
+    ['overview','demo'].forEach(id => {
+      const s = document.getElementById(id);
+      if (s && pos >= s.offsetTop) cur = s;
+    });
+    links.forEach(a => a.classList.toggle('active', a.textContent.toLowerCase().includes(cur.id)));
+  });
+</script>
 
 </body>
 </html>
