@@ -1,1 +1,46 @@
-A simulation model based Wang's work (https://doi.org/10.1016/j.actamat.2005.10.032) is built to evaluate the solid-state sintering behavior. Cahn-Hillard equation is used for density evolution, Allen-Cahn equation for grain orientation evolution. Rigid body motion is considered by introducing the force and torque.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Solid‑State Sintering Grain‑Growth Simulation</title>
+    <style>
+        body { font-family: system-ui, sans-serif; line-height: 1.6; margin: 0; padding: 0 1.5rem; }
+        h1, h2 { color: #1a3353; margin-top: 2rem; }
+        ul { margin-left: 1rem; }
+        code { background: #f5f5f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
+        .video-wrapper { margin: 2rem 0; text-align: center; }
+        video { max-width: 100%; height: auto; border: 1px solid #ccc; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<section id="overview">
+    <h1>Project Overview</h1>
+    <p>
+        This page summarizes a small personal project that recreates the two‑dimensional multiphase‑field model proposed by Wang&nbsp;et&nbsp;al. (<a href="https://doi.org/10.1016/j.actamat.2005.10.032" target="_blank" rel="noopener">Acta&nbsp;Materialia&nbsp;53&nbsp;(2005)&nbsp;2759‑2770</a>). The model captures solid‑state sintering and grain coarsening using:
+    </p>
+    <ul>
+        <li>The <em>Cahn–Hilliard</em> equation for the evolution of the density field <code>c</code>.</li>
+        <li>The <em>Allen–Cahn</em> equation for the evolution of grain‑orientation order parameters <code>η<sub>i</sub></code>.</li>
+        <li>Rigid‑body translation and rotation of each grain by integrating the net force and torque that arise from inter‑grain interactions.</li>
+    </ul>
+    <p>
+        I translated the original equations directly into MATLAB during my second undergraduate year, ran a short simulation with four initial grains, and recorded the results to visualise densification and pore shrinkage.
+    </p>
+</section>
+
+<section id="demo">
+    <h2>Simulation Video</h2>
+    <p>The clip below shows the sintering and coalescence of four grains over several thousand time steps.</p>
+
+    <div class="video-wrapper">
+        <!-- Replace the source with the exported MP4/WebM file -->
+        <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png">
+            <source src="grain_growth_demo.mp4" type="video/mp4" />
+            Your browser does not support HTML5 video.
+        </video>
+    </div>
+</section>
+
+</body>
+</html>
