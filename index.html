@@ -9,7 +9,7 @@
         ul { margin-left: 1rem; }
         code { background: #f5f5f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
         .video-wrapper { margin: 2rem 0; text-align: center; }
-        video { max-width: 100%; height: auto; border: 1px solid #ccc; border-radius: 8px; }
+        video { width: 700px; height: auto; border: 1px transparent solid #ccc; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -35,7 +35,7 @@
 
     <div class="video-wrapper">
         <!-- Replace the source with the exported MP4/WebM file -->
-        <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png" width=700px dorber="none">
+        <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png">
             <source src="grain_growth.mp4" type="video/mp4" />
             Your browser does not support HTML5 video.
         </video>
