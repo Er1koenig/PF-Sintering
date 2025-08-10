@@ -1,46 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <title>Phase Field Simulation of Sintering</title>
-    <style>
-        body { font-family: system-ui, sans-serif; line-height: 1.6; margin: 0; padding: 0 1.5rem; }
-        h1, h2 { color: #0b2f5b; margin-top: 2rem; }
-        ul { margin-left: 1rem; }
-        code { background: #f5f5f5; padding: 0.1rem 0.3rem; border-radius: 4px; }
-        .video-wrapper { margin: 1rem 0; text-align: center; }
-        video { width: 700px; height: auto; border: 1px solid #ccc; border-radius: 8px; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phase Field Simulation of Sintering — Project Page</title>
+  <meta name="description" content="Phase-field study of solid-state sintering that visualises how neighbouring powder grains neck, densify, and rotate—revealing the microstructural physics of porosity loss." />
+  <meta name="author" content="TAO Yuhao" />
+
+  <!-- Fonts (match homepage) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,600;0,700;1,600;1,700&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-RhCeKEeyiLdZ28yY7mVt8XzfnOz2bNqsTP7PvpB3qHwD6PPV6cO9HcL7JQhN4F5m2dlHtb1zGuUHmXn4b8vLAw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Optional LaTeX rendering -->
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    /* ======= Theme tokens (aligned with homepage) ======= */
+    :root{
+      --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", Arial, sans-serif;
+      --font-serif-head: "Lora", "Noto Serif SC", "Songti SC", STSong, Georgia, "Times New Roman", serif;
+
+      --theme-color: #0b2f5b;
+      --theme-color-light: #476d96;
+      --theme-color-subtle: #e2e8f4;
+
+      --bg: #ffffff;
+      --text: #243447;
+      --muted: #5b6b7b;
+      --surface: #fafbfd;
+      --border: rgba(11,47,91,.12);
+      --shadow: 0 1px 3px rgba(0,0,0,.05), 0 8px 20px rgba(0,0,0,.06);
+
+      --step--1: clamp(0.88rem, 0.18vw + 0.82rem, 0.96rem);
+      --step-0:  clamp(1.00rem, 0.22vw + 0.94rem, 1.08rem);
+      --step-1:  clamp(1.125rem, 0.32vw + 1.02rem, 1.25rem);
+      --step-2:  clamp(1.35rem, 0.6vw + 1.12rem, 1.55rem);
+      --step-3:  clamp(1.62rem, 0.9vw + 1.24rem, 1.95rem);
+      --step-4:  clamp(2.15rem, 1.6vw + 1.42rem, 2.6rem);
+      --step-5:  clamp(2.8rem,  2.8vw + 1.6rem, 3.6rem);
+    }
+
+    /* Dark theme */
+    :root.dark{
+      color-scheme: dark;
+      --bg: #0f1216;
+      --text: #e7ebf1;
+      --muted: #aab4c1;
+      --surface: #131821;
+      --border: #293240;
+      --theme-color-subtle: color-mix(in srgb, var(--theme-color) 28%, #141a22);
+      --shadow: 0 2px 8px rgba(0,0,0,.45), 0 10px 28px rgba(0,0,0,.35);
+    }
+
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:var(--font-sans); font-size:var(--step-0); line-height:1.7; letter-spacing:.01em;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    }
+
+    a{ color: var(--theme-color-light); text-decoration: underline transparent 2px; text-underline-offset:3px; transition: color .2s, text-decoration-color .2s; }
+    a:hover{ color: var(--theme-color); text-decoration-color: var(--theme-color); }
+
+    h1,h2,h3{ font-family:var(--font-serif-head); font-weight:600; line-height:1.22; letter-spacing:.006em; margin:0 0 .5rem; }
+    h1{ font-size:var(--step-4); }
+    h2{ font-size:var(--step-3); }
+
+    .container{ max-width:1100px; margin:0 auto; padding: 1.2rem 1.2rem 0; }
+
+    /* Floating theme button (top-right) */
+    .theme-btn{
+      position: fixed; top: 14px; right: 16px; z-index: 1000;
+      display:inline-flex; align-items:center; justify-content:center;
+      width:36px; height:36px; border-radius:9999px;
+      border:1px solid rgba(0,0,0,.12);
+      background:rgba(255,255,255,.65);
+      backdrop-filter: blur(8px) saturate(140%);
+      -webkit-backdrop-filter: blur(8px) saturate(140%);
+      cursor:pointer; font-size:1rem; line-height:1; color:#333;
+      transition: background .2s, border-color .2s, transform .02s, opacity .2s; opacity:.95;
+    }
+    .theme-btn:hover{ opacity:1; border-color:rgba(0,0,0,.2) }
+    .theme-btn:active{ transform: translateY(1px); }
+    :root.dark .theme-btn{ background: rgba(20,24,31,.72); border-color: rgba(255,255,255,.12); color: var(--text); }
+
+    /* Sections */
+    section[id]{ scroll-margin-top: 24px; }
+    .section{ padding: 1.6rem 0 2.2rem; }
+    .section-title{ position:relative; font-size: var(--step-2); margin: 0 0 1rem; }
+    .section-title::after{ content:""; position:absolute; left:0; bottom:-.45rem; width:3rem; height:3px; background:var(--theme-color); border-radius:1px; }
+
+    .muted{ color: var(--muted); }
+
+    /* Media & Figures (card style + proper round corners) */
+    .fig{ background: var(--surface); border:1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: .8rem; margin: 1.2rem 0; }
+    .fig .media{ border-radius:10px; overflow:hidden; }
+    .fig .media img, .fig .media video{ display:block; width:min(1000px, 95vw); max-width:100%; height:auto; margin:0 auto; border-radius:0; border:none; }
+    .cap{ font-size:.95rem; color:var(--muted); margin:.5rem auto 0; max-width:min(980px, 92vw); }
+
+    /* Inline code */
+    code{ background: color-mix(in srgb, var(--theme-color) 6%, #f5f7fb); padding: .1rem .35rem; border-radius: 4px; }
+    :root.dark code{ background: color-mix(in srgb, var(--theme-color) 20%, #0f1216); }
+  </style>
 </head>
 <body>
+  <!-- floating theme switcher -->
+  <button id="theme-btn" class="theme-btn" type="button" aria-label="Theme: Light (click to change)" title="Theme: Light"><span id="theme-ico">☀︎</span></button>
 
-<section id="overview">
-    <h1>Project Overview</h1>
-    <p>
-        This page summarizes a small research project with IWM (Chair and Institute for Materials Applications in Mechanical Engineering) at RWTH Aachen University that recreates the two‑dimensional multiphase‑field model proposed by Wang&nbsp;et&nbsp;al. (<a href="https://doi.org/10.1016/j.actamat.2005.10.032" target="_blank" rel="noopener">Acta&nbsp;Materialia&nbsp;53&nbsp;(2005)&nbsp;2759‑2770</a>). The model captures solid‑state sintering and grain coarsening using:
-    </p>
-    <ul>
-        <li>The <em>Cahn–Hilliard</em> equation for the evolution of the density field <code>c</code>.</li>
-        <li>The <em>Allen–Cahn</em> equation for the evolution of grain‑orientation order parameters <code>η<sub>i</sub></code>.</li>
-        <li>Rigid‑body translation and rotation of each grain by integrating the net force and torque that arise from inter‑grain interactions.</li>
-    </ul>
-    <p>
-        I translated the original variational equations into MATLAB, ran the test case simulation with four initial grains, and recorded the results to visualise densification and pore shrinkage.
-    </p>
-</section>
+  <main class="container">
+    <!-- ================= Part I ================= -->
+    <section id="overview" class="section">
+      <h2 class="section-title">Part I — Model Overview</h2>
+      <p>
+        This page summarises a small project with IWM (Institute for Materials Applications in Mechanical Engineering, RWTH Aachen)
+        that reproduces the 2D multi-phase-field model by Wang et&nbsp;al., <em>Acta Materialia</em> 53 (2005) 2759–2770. (DOI: 10.1016/j.actamat.2005.10.032)
+        The model captures solid-state sintering and grain coarsening using the
+        <em>Cahn–Hilliard</em> equation for the density field <code>c</code>, the <em>Allen–Cahn</em> equation for grain-orientation order parameters <code>η<sub>i</sub></code>,
+        and rigid-body translation/rotation of each grain via net inter-grain force and torque.
+        I implemented the variational formulation in MATLAB, ran a four-grain test case, and visualised densification and pore shrinkage.
+      </p>
+    </section>
 
-<section id="demo">
-    <h2>Simulation Video</h2>
-    <p>The clip below shows the sintering and coalescence of three grains.</p>
+    <!-- ================= Part II ================= -->
+    <section id="demo" class="section">
+      <h2 class="section-title">Part II — Simulation Demo</h2>
+      <p class="muted">Sintering and coalescence of three grains in the 2D phase-field framework.</p>
 
-    <div class="video-wrapper">
-        <!-- Replace the source with the exported MP4/WebM file -->
-        <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png">
+      <figure class="fig">
+        <div class="media">
+          <video id="grainGrowthDemo" controls preload="metadata" poster="preview.png">
             <source src="grain_growth.mp4" type="video/mp4" />
             Your browser does not support HTML5 video.
-        </video>
-    </div>
-</section>
+          </video>
+        </div>
+        <figcaption class="cap">Time-lapse of neck growth, densification and pore shrinkage.</figcaption>
+      </figure>
+    </section>
+  </main>
 
+  <!-- ======= Script: theme switch (no header) ======= -->
+  <script>
+    // Single Button Theme Switcher (☀︎ → ☾ → ◐)
+    (function(){
+      const docEl = document.documentElement;
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+      const btn = document.getElementById('theme-btn');
+      const ico = document.getElementById('theme-ico');
+      const STORAGE_KEY = 'theme'; // 'light' | 'dark' | 'auto'
+
+      const chars = { light: '☀︎', dark: '☾', auto: '◐' };
+      const titles = {
+        light: 'Theme: Light',
+        dark:  'Theme: Dark',
+        auto:  'Theme: Auto (follows system)'
+      };
+
+      function setIcon(mode){ if(!ico||!btn) return; ico.textContent = chars[mode]; btn.setAttribute('aria-label', titles[mode] + ' (click to change)'); btn.setAttribute('title', titles[mode]); btn.dataset.mode = mode; }
+      function applyTheme(mode, persist = true){
+        const isDark = (mode === 'dark') || (mode === 'auto' && prefersDark.matches);
+        docEl.classList.toggle('dark', isDark);
+        setIcon(mode);
+        if (persist) localStorage.setItem(STORAGE_KEY, mode);
+      }
+      function nextMode(cur){ if(cur==='light') return 'dark'; if(cur==='dark') return 'auto'; return 'light'; }
+
+      const saved = localStorage.getItem(STORAGE_KEY) || 'light';
+      applyTheme(saved, false);
+
+      if(btn){
+        btn.addEventListener('click', () => {
+          const cur = btn.dataset.mode || saved || 'light';
+          applyTheme(nextMode(cur));
+        });
+      }
+      prefersDark.addEventListener('change', () => {
+        const cur = localStorage.getItem(STORAGE_KEY) || 'light';
+        if (cur === 'auto') applyTheme('auto', false);
+      });
+    })();
+  </script>
 </body>
 </html>
